@@ -1,0 +1,88 @@
+clear
+load('mnist_all.mat')
+% Preparation of the data:
+n1 = 6742;
+n2 = 5958;
+d = 784;
+tau = 10^(-7); % Learning rate.
+
+N = n1 + n2;
+Y = zeros(N, 1);
+X(1:n1, :) = train1;
+Y(1:n1, 1) = 1;
+X(n1+1:N, :) = train2;
+Y(n1+1:N, 1) = 2;
+X = double(X);
+
+% The binary Logistic Regression algorithm:
+w = zeros(d, 1);
+L = zeros(1, d);
+for i=1:d
+    l = 0;
+    D = zeros(d, 1);
+    for j=1:N
+        x = X(j, :);
+        y = Y(j, :);
+        y = y-1;
+        z = x*w;
+        g = 1/(1+exp(-z));
+
+        % Calculate the current cost function:
+        if y==1
+            p = g;
+        else
+            p = 1 - g;
+        end
+        l = l + log(p);
+
+        % Calculation of the derivative:
+        D = D + (y - g)*(x');
+
+    end
+    l = l/N;
+    D = D./N;
+
+    L(1, i) = l;
+    w = w + tau*D; % Gradient ascent
+
+end
+
+figure
+plot(1:d, L(1,:))
+xlabel('Iteration')
+ylabel('Cost function')
+title('The cost function l_w as a function of the iteration:')
+
+n1 = 1135;
+n2 = 1032;
+N = n1 + n2;
+X(1:n1, :) = test1;
+Y(1:n1, 1) = 1;
+X(n1+1:N, :) = test2;
+Y(n1+1:N, 1) = 2;
+X = double(X);
+
+R = 0;
+
+for j=1:N
+    x = X(j, :);
+    y = Y(j, :);
+    y = y-1;
+    z = x*w;
+    g = 1/(1+exp(-z));
+    
+    if g>0.5
+        p = 1;
+    else
+        p = 0;
+    end
+    
+    if p==y
+        R = R+1;
+    end
+end
+
+SuccesRate = R/N
+
+
+
